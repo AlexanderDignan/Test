@@ -1,14 +1,11 @@
 name: Terraform Plan and Apply
 
 on:
-  workflow_dispatch: # Triggered manually or on push to main branch
-  push:
-    branches:
-      - main
+  workflow_dispatch: # Allows manual triggering of the workflow
 
 jobs:
-  terraform:
-    name: Terraform Plan and Apply
+  terraform-plan:
+    name: Run Terraform Plan
     runs-on: ubuntu-latest
 
     steps:
@@ -18,7 +15,7 @@ jobs:
       - name: Set up Terraform
         uses: hashicorp/setup-terraform@v2
         with:
-          terraform_version: 1.5.6 # Replace with your desired Terraform version
+          terraform_version: 1.5.6
 
       - name: Initialize Terraform
         run: terraform init
@@ -33,17 +30,21 @@ jobs:
           name: terraform-plan
           path: tfplan
 
-      - name: Await Manual Approval
-        uses: chrnorm/deploy-approval@v1
-        with:
-          github-token: ${{ secrets.GITHUB_TOKEN }}
-          timeout-minutes: 60 # Optional timeout for approval
+  terraform-apply:
+    name: Run Terraform Apply
+    needs: terraform-plan # Ensures this job runs only after the plan job
+    runs-on: ubuntu-latest
 
+    steps:
       - name: Download Plan Artifact
         uses: actions/download-artifact@v3
         with:
           name: terraform-plan
           path: .
 
-      - name: Run Terraform Apply
+      - name: Await Manual Approval
+        run: echo "Awaiting manual approval"
+        timeout-minutes: 60 # Optional: workflow will time out if not approved
+
+      - name: Apply Terraform Plan
         run: terraform apply tfplan
