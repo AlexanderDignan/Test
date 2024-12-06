@@ -1,6 +1,7 @@
 name: Terraform Plan and Apply
 
 on:
+  workflow_dispatch: # Triggered manually or on push to main branch
   push:
     branches:
       - main
@@ -10,15 +11,6 @@ jobs:
     name: Terraform Plan and Apply
     runs-on: ubuntu-latest
 
-    env:
-      TF_WORKSPACE: default
-      TF_VAR_example_variable: example_value # Replace with your environment variables
-
-    permissions:
-      id-token: write
-      contents: read
-      actions: write
-
     steps:
       - name: Checkout repository
         uses: actions/checkout@v3
@@ -26,7 +18,7 @@ jobs:
       - name: Set up Terraform
         uses: hashicorp/setup-terraform@v2
         with:
-          terraform_version: 1.5.6 # Replace with your desired version
+          terraform_version: 1.5.6 # Replace with your desired Terraform version
 
       - name: Initialize Terraform
         run: terraform init
@@ -34,9 +26,6 @@ jobs:
       - name: Run Terraform Plan
         id: terraform_plan
         run: terraform plan -out=tfplan
-        env:
-          # Set any necessary Terraform variables
-          TF_VAR_example: example_value
 
       - name: Save Plan Artifact
         uses: actions/upload-artifact@v3
@@ -45,20 +34,16 @@ jobs:
           path: tfplan
 
       - name: Await Manual Approval
-        uses: hmarr/auto-approve-action@v2 # Handles manual approval
+        uses: chrnorm/deploy-approval@v1
         with:
-          reactions: 👍👎
-          approve_label: 'approved'
-          reject_label: 'rejected'
+          github-token: ${{ secrets.GITHUB_TOKEN }}
+          timeout-minutes: 60 # Optional timeout for approval
 
       - name: Download Plan Artifact
         uses: actions/download-artifact@v3
         with:
           name: terraform-plan
-          path: ./artifact
+          path: .
 
       - name: Run Terraform Apply
-        if: github.event.pull_request.merged == true # Approval linked to PR Merge to Main
-        id:
-          artifact: plan_overview
-        command: Artifact-summary
+        run: terraform apply tfplan
