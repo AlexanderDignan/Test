@@ -1,7 +1,8 @@
 terraform {
   backend "azurerm" {               
     key      = "prod.terraform.tfstate"
-    use_oidc = true
+    use_azuread_auth = true
+    #use_oidc = true
   }
 
   required_providers {
