@@ -23,7 +23,7 @@ on:
       environment:
         description: 'The Github environment name. Also used to select tfvar file to use'
         type: string
-        default: dev
+        default: production
       infra-repo:
         description: 'The GitHub repository where the Terraform code is stored'
         type: string
