@@ -100,9 +100,7 @@ jobs:
       - name: Terraform Init
         working-directory: ${{ env.TERRAFORM_CODE_DIR }}
         run: |
-          terraform init -upgrade \
-            -backend-config "${{inputs.terraform-environment-dir}}/${{inputs.environment}}.tfbackend" \
-            -backend-config="key=${{inputs.app-env}}-${{ github.repository_id }}.tfstate"
+          terraform init
 
       - name: Terraform Validate
         working-directory: ${{ env.TERRAFORM_CODE_DIR }}
