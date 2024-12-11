@@ -50,9 +50,6 @@ on:
       ARM_TENANT_ID:
         description: 'Azure Tenant ID where Service Principal is registered'
         required: true
-      ARM_CLIENT_SECRET:
-        description: 'Secret'
-        required: true
       GITHUB_PAT:
         description: 'Github Personal Access Token with repo access to the infra repository. Will default to GITHUB_TOKEN not passed through'
 
