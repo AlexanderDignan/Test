@@ -41,15 +41,6 @@ on:
         type: string
         default: "envs"
     secrets:
-      ARM_CLIENT_ID:
-        description: 'Azure Service Principal Client ID with access to the Azure Subscription'
-        required: true
-      ARM_SUBSCRIPTION_ID:
-        description: 'Azure Subscription ID where Service Principal is registered'
-        required: true
-      ARM_TENANT_ID:
-        description: 'Azure Tenant ID where Service Principal is registered'
-        required: true
       GITHUB_PAT:
         description: 'Github Personal Access Token with repo access to the infra repository. Will default to GITHUB_TOKEN not passed through'
 
