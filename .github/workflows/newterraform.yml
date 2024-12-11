@@ -44,6 +44,12 @@ on:
         required: true
       GITHUB_PAT:
         description: 'GitHub PAT with repo access. Defaults to GITHUB_TOKEN if not provided.'
+      BACKEND_AZURE_RESOURCE_GROUP_NAME:
+        description: 'RG Name'
+        required: true
+      BACKEND_AZURE_STORAGE_ACCOUNT_CONTAINER_NAME:
+        description: 'stg account Name'
+        required: true  
 
 permissions:
   id-token: write
