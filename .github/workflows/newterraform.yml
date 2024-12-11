@@ -41,6 +41,15 @@ on:
         type: string
         default: "envs"
     secrets:
+      ARM_CLIENT_ID:
+        description: 'Azure Service Principal Client ID with access to the Azure Subscription'
+        required: true
+      ARM_SUBSCRIPTION_ID:
+        description: 'Azure Subscription ID where Service Principal is registered'
+        required: true
+      ARM_TENANT_ID:
+        description: 'Azure Tenant ID where Service Principal is registered'
+        required: true
       GITHUB_PAT:
         description: 'Github Personal Access Token with repo access to the infra repository. Will default to GITHUB_TOKEN not passed through'
 
@@ -80,9 +89,9 @@ jobs:
       - name: Azure login
         uses: azure/login@v2
         with:
-          client-id: ${{ secrets.ARM_CLIENT_ID }}
-          tenant-id: ${{ secrets.ARM_TENANT_ID }}
-          subscription-id: ${{ secrets.ARM_SUBSCRIPTION_ID }}
+          client-id: ${{ env.ARM_CLIENT_ID }}
+          tenant-id: ${{ env.ARM_TENANT_ID }}
+          subscription-id: ${{ env.ARM_SUBSCRIPTION_ID }}
 
       - name: Setup Terraform
         uses: hashicorp/setup-terraform@v3
@@ -175,9 +184,9 @@ jobs:
       - name: Azure login
         uses: azure/login@v2
         with:
-          client-id: ${{ secrets.ARM_CLIENT_ID }}
-          tenant-id: ${{ secrets.ARM_TENANT_ID }}
-          subscription-id: ${{ secrets.ARM_SUBSCRIPTION_ID }}
+          client-id: ${{ env.ARM_CLIENT_ID }}
+          tenant-id: ${{ env.ARM_TENANT_ID }}
+          subscription-id: ${{ env.ARM_SUBSCRIPTION_ID }}
 
       - name: Setup Terraform
         uses: hashicorp/setup-terraform@v3
