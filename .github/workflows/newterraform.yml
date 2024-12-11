@@ -83,7 +83,10 @@ jobs:
         uses: hashicorp/setup-terraform@v3
         with:
           terraform_version: ${{ inputs.terraform-version }}
-
+      
+      - name: Debug Environment Variables
+        run: printenv | grep 'ARM_'
+        
       - name: Terraform Init
         env: 
           ARM_CLIENT_ID: ${{ secrets.ARM_CLIENT_ID }}
