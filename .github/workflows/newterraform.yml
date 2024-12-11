@@ -25,7 +25,7 @@ on:
         type: string
         default: production
       infra-repo:
-        description: 'The GitHub repository where the Terraform code is stored'
+        description: 'The GitHub repository where Terraform code is stored'
         type: string
         default: ${{github.repository}}
       infra-ref:
