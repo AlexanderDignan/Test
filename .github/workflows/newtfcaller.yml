@@ -20,9 +20,9 @@ jobs:
       terraform-version: '1.9.5'
       terraform-environment-dir: 'envs'
     secrets:
-      AZURE_CLIENT_ID: "3c61b2f3-9809-4b4e-b7de-b89836b7bb73"
-      AZURE_SUBSCRIPTION_ID: "bc01f5a7-8f79-4a1e-99df-29b855e8d965"
-      AZURE_TENANT_ID: "4b497271-d1e9-49b7-bea2-070105eed6ab"
+      #ARM_CLIENT_ID: "3c61b2f3-9809-4b4e-b7de-b89836b7bb73"
+      #ARM_SUBSCRIPTION_ID: "bc01f5a7-8f79-4a1e-99df-29b855e8d965"
+      #ARM_TENANT_ID: "4b497271-d1e9-49b7-bea2-070105eed6ab"
       GITHUB_PAT: ${{ github.token }}
     # You can also simply set
     # secrets: inherit
