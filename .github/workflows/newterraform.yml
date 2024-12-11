@@ -48,7 +48,7 @@ on:
         description: 'Azure Subscription ID where Service Principal is registered'
         required: true
       AZURE_TENANT_ID:
-        description: 'Azure Tenant ID where the Service Principal is registered'
+        description: 'Azure Tenant ID where Service Principal is registered'
         required: true
       GITHUB_PAT:
         description: 'Github Personal Access Token with repo access to the infra repository. Will default to GITHUB_TOKEN not passed through'
