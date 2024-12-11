@@ -54,10 +54,10 @@ on:
         description: 'Github Personal Access Token with repo access to the infra repository. Will default to GITHUB_TOKEN not passed through'
 
 env:
-  ARM_CLIENT_ID: "3c61b2f3-9809-4b4e-b7de-b89836b7bb73"
-  ARM_SUBSCRIPTION_ID: "bc01f5a7-8f79-4a1e-99df-29b855e8d965"
-  ARM_TENANT_ID: "4b497271-d1e9-49b7-bea2-070105eed6ab"
-  ARM_CLIENT_SECRET: "DHm8Q~WrgvieEN9CkTvAxcHj4k1lwTD9AiQJEcpk"
+  ARM_CLIENT_ID: ${{ secrets.AZURE_CLIENT_ID }}
+  ARM_SUBSCRIPTION_ID: ${{ secrets.AZURE_SUBSCRIPTION_ID }}
+  ARM_TENANT_ID: ${{ secrets.AZURE_TENANT_ID }}
+  ARM_USE_AZUREAD: true
   TERRAFORM_CODE_DIR: ${{ github.workspace }}
   TF_LOG: ERROR
   TF_LOG_PATH: tf.log
@@ -101,7 +101,7 @@ jobs:
       - name: Terraform Init
         working-directory: ${{ env.TERRAFORM_CODE_DIR }}
         run: |
-          terraform init
+          terraform init -backend-config="resource_group_name=${{secrets.BACKEND_AZURE_RESOURCE_GROUP_NAME}}" -backend-config="storage_account_name=${{secrets.BACKEND_AZURE_STORAGE_ACCOUNT_NAME}}" -backend-config="container_name=${{secrets.BACKEND_AZURE_STORAGE_ACCOUNT_CONTAINER_NAME}}"
 
       - name: Terraform Validate
         working-directory: ${{ env.TERRAFORM_CODE_DIR }}
