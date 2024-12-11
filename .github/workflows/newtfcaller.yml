@@ -24,5 +24,7 @@ jobs:
       ARM_SUBSCRIPTION_ID: "bc01f5a7-8f79-4a1e-99df-29b855e8d965"
       ARM_TENANT_ID: "4b497271-d1e9-49b7-bea2-070105eed6ab"
       GITHUB_PAT: ${{ github.token }}
+      BACKEND_AZURE_RESOURCE_GROUP_NAME: "cloud-shell-storage-eastus"
+      BACKEND_AZURE_STORAGE_ACCOUNT_CONTAINER_NAME: "tfstate"
     # You can also simply set
     # secrets: inherit
