@@ -1,97 +1,84 @@
-# Description: This is a GitHub Actions workflow file that uses Terraform to deploy infrastructure to Azure.
-# Author: https://github.com/dkopec/
-# Required Secrets to be added to Envrioment Variables in GitHub Repository: 
-# - AZURE_CLIENT_ID
-# - AZURE_SUBSCRIPTION_ID - 
-# - AZURE_TENANT_ID - Azure Tenant ID of the Azure Service Principal that will make Terraform changes
-# - GH_BOT_PAT - a Github Personal Access Token with repo access to the infra repository
-
 name: Terraform Workflow Template
 
 on:
   workflow_call:
     inputs:
       approvers:
-        description: 'The GitHub username of the person who will approve the Terraform Plan'
+        description: 'GitHub username of the approver for Terraform Plan.'
         type: string
         required: true
         default: ${{ github.actor }}
       app-env:
-        description: 'The application environment name for the Terraform Plan, populates the state key.'
+        description: 'Application environment name for Terraform Plan (state key).'
         type: string
         default: dev
       environment:
-        description: 'The Github environment name. Also used to select tfvar file to use'
+        description: 'GitHub environment name, selects tfvar file.'
         type: string
         default: production
       infra-repo:
-        description: 'The GitHub repository where Terraform code is stored'
+        description: 'GitHub repository with Terraform code.'
         type: string
-        default: ${{github.repository}}
+        default: ${{ github.repository }}
       infra-ref:
-        description: 'The branch or tag of the infra-repo to use'
+        description: 'Branch or tag of the infra-repo.'
         type: string
-        default: ${{github.ref}}
+        default: ${{ github.ref }}
       terraform-version:
-        description: 'The version of Terraform to use'
+        description: 'Terraform version.'
         type: string
         default: 1.9.5
       terraform-environment-dir:
-        description: 'The directory where the Terraform environment files are stored'
+        description: 'Directory for Terraform environment files.'
         type: string
         default: "envs"
     secrets:
       ARM_CLIENT_ID:
-        description: 'Azure Service Principal Client ID with access to the Azure Subscription'
+        description: 'Azure Service Principal Client ID.'
         required: true
       ARM_SUBSCRIPTION_ID:
-        description: 'Azure Subscription ID where Service Principal is registered'
+        description: 'Azure Subscription ID.'
         required: true
       ARM_TENANT_ID:
-        description: 'Azure Tenant ID where Service Principal is registered'
+        description: 'Azure Tenant ID.'
         required: true
       GITHUB_PAT:
-        description: 'Github Personal Access Token with repo access to the infra repository. Will default to GITHUB_TOKEN not passed through'
-
-env:
-  ARM_CLIENT_ID: ${{ secrets.AZURE_CLIENT_ID }}
-  ARM_SUBSCRIPTION_ID: ${{ secrets.AZURE_SUBSCRIPTION_ID }}
-  ARM_TENANT_ID: ${{ secrets.AZURE_TENANT_ID }}
-  ARM_USE_AZUREAD: true
-  TERRAFORM_CODE_DIR: ${{ github.workspace }}
-  TF_LOG: ERROR
-  TF_LOG_PATH: tf.log
-
-concurrency:
-  group: ${{ github.ref }}
+        description: 'GitHub PAT with repo access. Defaults to GITHUB_TOKEN if not provided.'
 
 permissions:
   id-token: write
   contents: read
+  workflows: write
+
+env:
+  TF_LOG: ERROR
+  TF_LOG_PATH: tf.log
+
+concurrency:
+  group: ${{ github.workflow }}-${{ github.ref }}
 
 jobs:
   terraform-plan:
-    name: "Plan Infrastructure"
+    name: "Terraform Plan"
     runs-on: ubuntu-latest
     environment: ${{ inputs.environment }}
     outputs:
       tfplanExitCode: ${{ steps.plan.outputs.exitcode }}
 
     steps:
-      - name: Checkout Infrastructure Code
+      - name: Checkout Repository
         uses: actions/checkout@v4
         with:
           token: ${{ secrets.GITHUB_PAT || github.token }}
           repository: ${{ inputs.infra-repo }}
-          ref: ${{ github.repository != inputs.infra-repo && inputs.infra-ref || github.event_name == 'push' && github.ref || github.event_name == 'pull_request' && github.event.pull_request.head.ref }}
-          path: ${{ env.TERRAFORM_CODE_DIR }}
+          ref: ${{ inputs.infra-ref }}
 
-      - name: Azure login
+      - name: Azure Login
         uses: azure/login@v2
         with:
-          client-id: ${{ env.ARM_CLIENT_ID }}
-          tenant-id: ${{ env.ARM_TENANT_ID }}
-          subscription-id: ${{ env.ARM_SUBSCRIPTION_ID }}
+          client-id: ${{ secrets.ARM_CLIENT_ID }}
+          tenant-id: ${{ secrets.ARM_TENANT_ID }}
+          subscription-id: ${{ secrets.ARM_SUBSCRIPTION_ID }}
 
       - name: Setup Terraform
         uses: hashicorp/setup-terraform@v3
@@ -99,148 +86,71 @@ jobs:
           terraform_version: ${{ inputs.terraform-version }}
 
       - name: Terraform Init
-        working-directory: ${{ env.TERRAFORM_CODE_DIR }}
         run: |
-          terraform init -backend-config="resource_group_name=${{secrets.BACKEND_AZURE_RESOURCE_GROUP_NAME}}" -backend-config="storage_account_name=${{secrets.BACKEND_AZURE_STORAGE_ACCOUNT_NAME}}" -backend-config="container_name=${{secrets.BACKEND_AZURE_STORAGE_ACCOUNT_CONTAINER_NAME}}"
+          terraform init \
+            -backend-config="key=${{ inputs.app-env }}.tfstate"
 
       - name: Terraform Validate
-        working-directory: ${{ env.TERRAFORM_CODE_DIR }}
         run: terraform validate
 
       - name: Terraform Format
-        working-directory: ${{ env.TERRAFORM_CODE_DIR }}
         run: terraform fmt -recursive -check
 
       - name: Terraform Plan
         id: plan
-        working-directory: ${{ env.TERRAFORM_CODE_DIR }}
         run: |
-          echo "Running Terraform Plan"
-          echo "Running with Enviroment: ${{inputs.app-env}}"
           terraform plan \
-            -var-file "${{inputs.terraform-environment-dir}}/${{inputs.environment}}.tfvars" \
-            -var "environment=${{inputs.app-env}}" \
-            -no-color -input=false \
-            -out tfplan
-          echo "Done running Terraform Plan. tfplan created."
+            -var-file="${{ inputs.terraform-environment-dir }}/${{ inputs.environment }}.tfvars" \
+            -var "environment=${{ inputs.app-env }}" \
+            -out=tfplan
 
-      - name: Archive tfplan
+      - name: Upload Plan Artifact
         uses: actions/upload-artifact@v4
         with:
           name: tfplan
-          path: ${{ env.TERRAFORM_CODE_DIR }}/tfplan
-
-      - name: Upload Error Log
-        if: always()
-        uses: actions/upload-artifact@v4.3.1
-        with:
-          name: tflog-plan
-          path: ${{ env.TERRAFORM_CODE_DIR }}/${{env.TF_LOG_PATH}}
-
-      - name: Terraform Plan Human Readable Artifact
-        id: tf-text
-        working-directory: ${{ env.TERRAFORM_CODE_DIR }}
-        run: |
-          terraform show -no-color tfplan > tftext
-
-      - name: Archive tftext
-        uses: actions/upload-artifact@v4
-        with:
-          name: tftext
-          path: ${{ env.TERRAFORM_CODE_DIR }}/tftext
+          path: ./tfplan
 
   wait-for-approval:
     name: "Wait for Approval"
     runs-on: ubuntu-latest
-    environment: ${{ inputs.environment }}
     needs: [terraform-plan]
-    timeout-minutes: 30
+    environment: ${{ inputs.environment }}
     steps:
-      - name: Wait for approval
-        uses: trstringer/manual-approval@v1
-        if: github.ref == 'refs/heads/main' || contains(github.ref, 'heads/release') || startsWith(github.ref, 'refs/tags')
+      - name: Manual Approval
+        uses: hmarr/auto-approve-action@v2
         with:
-          secret: ${{ secrets.GITHUB_PAT || github.token }}
-          approvers: ${{ inputs.approvers }}
-          minimum-approvals: 1
-          issue-title: ${{inputs.app-env}}
-          issue-body: |
-            Please review the Plan for the run before approving.
+          GITHUB_TOKEN: ${{ secrets.GITHUB_PAT || github.token }}
 
   terraform-apply:
-    name: "Provision Infrastructure"
-    runs-on:  ubuntu-latest
-    environment: ${{ inputs.environment }}
+    name: "Terraform Apply"
+    runs-on: ubuntu-latest
     needs: [wait-for-approval]
+    environment: ${{ inputs.environment }}
     steps:
-      - name: Checkout Infrastructure Code
+      - name: Checkout Repository
         uses: actions/checkout@v4
         with:
           token: ${{ secrets.GITHUB_PAT || github.token }}
           repository: ${{ inputs.infra-repo }}
-          ref: ${{ github.repository != inputs.infra-repo && inputs.infra-ref || github.event_name == 'push' && github.ref || github.event_name == 'pull_request' && github.event.pull_request.head.ref }}
-          path: ${{ env.TERRAFORM_CODE_DIR }}
+          ref: ${{ inputs.infra-ref }}
 
-      - name: Azure login
+      - name: Azure Login
         uses: azure/login@v2
         with:
-          client-id: ${{ env.ARM_CLIENT_ID }}
-          tenant-id: ${{ env.ARM_TENANT_ID }}
-          subscription-id: ${{ env.ARM_SUBSCRIPTION_ID }}
+          client-id: ${{ secrets.ARM_CLIENT_ID }}
+          tenant-id: ${{ secrets.ARM_TENANT_ID }}
+          subscription-id: ${{ secrets.ARM_SUBSCRIPTION_ID }}
 
       - name: Setup Terraform
         uses: hashicorp/setup-terraform@v3
         with:
           terraform_version: ${{ inputs.terraform-version }}
 
-      - name: Terraform Init
-        working-directory: ${{ env.TERRAFORM_CODE_DIR }}
-        run: |
-          terraform init -upgrade \
-            -backend-config "${{inputs.terraform-environment-dir}}/${{inputs.environment}}.tfbackend" \
-            -backend-config="key=${{inputs.app-env}}-${{ github.repository_id }}.tfstate"
-
-      - uses: actions/download-artifact@v4
+      - name: Download Plan Artifact
+        uses: actions/download-artifact@v4
         with:
           name: tfplan
-          path: ${{ env.TERRAFORM_CODE_DIR }}
+          path: ./tfplan
 
       - name: Terraform Apply
-        id: apply
-        working-directory: ${{ env.TERRAFORM_CODE_DIR }}
-        run: |
-          terraform apply tfplan
-        continue-on-error: true
-
-      - name: Terraform Output
-        id: set-outputs
-        working-directory: ${{ env.TERRAFORM_CODE_DIR }}
-        run: |
-          echo "$(terraform output --json)" | jq -r 'keys[] as $k | "\($k)=\(.[$k].value)"' >> $GITHUB_OUTPUT
-
-      - name: Upload Error Log
-        uses: actions/upload-artifact@v4
-        with:
-          name: tflog-apply
-          path: ${{ env.TERRAFORM_CODE_DIR }}/${{env.TF_LOG_PATH}}
-
-      - name: Terraform Import
-        id: import
-        working-directory: ${{ env.TERRAFORM_CODE_DIR }}
-        if: ${{ steps.apply.outcome == 'failure' || steps.apply.outputs.exitcode == '1' }}
-        run: |
-          echo "Attempting to Import errored resources."
-          pattern='.*vertex \"(?<terraform_id>.*)\" error:.*\"(?<cloud_id>.*)\" already exists - to be managed via Terraform this resource needs to be imported into the State.*'
-
-          grep -oP "$pattern" $TF_LOG_PATH | while read -r line ; do
-              terraform_id=$(echo $line | grep -oP '(?<=vertex \").*(?=\" error)')
-              azure_id=$(echo $line | grep -oP 'A resource with the ID "\K[^"]+')
-              echo "Attempting to import $terraform_id $azure_id"
-              terraform import -var-file "${{inputs.terraform-environment-dir}}/${{inputs.environment}}.tfvars" -var "environment=${{inputs.app-env}}" "$terraform_id" "$azure_id"
-          done
-
-      - name: Terraform Apply Outcome
-        if: ${{ steps.apply.outcome == 'failure' || steps.apply.outputs.exitcode == '1' }}
-        run: exit 1
-    outputs:
-      tf-outputs: ${{ toJSON(steps.set-outputs.outputs) }}
+        run: terraform apply tfplan
