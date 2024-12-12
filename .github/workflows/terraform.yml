@@ -122,19 +122,11 @@ jobs:
           name: tfplan
           path: ./tfplan
 
-  wait-for-approval:
-    name: "Manual Approval"
-    runs-on: ubuntu-latest
-    environment: ${{ inputs.environment }}
-    needs: terraform-plan
-    steps:
-      - name: Awaiting Approval
-        run: "echo Waiting for approval from approvers: ${{ inputs.approvers }}."
-
   terraform-apply:
     name: "Terraform Apply"
     runs-on: ubuntu-latest
-    needs: [wait-for-approval]
+    environment: ${{ inputs.environment }}
+    needs: [terraform-plan]
     steps:
       - name: Checkout Repository
         uses: actions/checkout@v4
