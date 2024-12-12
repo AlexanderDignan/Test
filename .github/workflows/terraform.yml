@@ -87,7 +87,7 @@ jobs:
         uses: hashicorp/setup-terraform@v3
         with:
           terraform_version: ${{ inputs.terraform-version }}
-        
+
       - name: Terraform Init
         run: |
           terraform init \
@@ -95,7 +95,6 @@ jobs:
             -backend-config="storage_account_name=${{secrets.BACKEND_AZURE_STORAGE_ACCOUNT_NAME}}" \
             -backend-config="container_name=${{secrets.BACKEND_AZURE_STORAGE_ACCOUNT_CONTAINER_NAME}}" \
             -backend-config="key=${{ inputs.app-env }}.tfstate"
-
       - name: Terraform Validate
         run: terraform validate
 
@@ -109,7 +108,6 @@ jobs:
             -var-file="${{ inputs.terraform-environment-dir }}/${{ inputs.environment }}.tfvars" \
             -var "environment=${{ inputs.app-env }}" \
             -out=tfplan
-
       - name: Upload Plan Artifact
         uses: actions/upload-artifact@v4
         with:
@@ -124,7 +122,7 @@ jobs:
       name: ${{ inputs.environment }}
     steps:
       - name: Awaiting Approval
-        run: "echo Waiting for approval from approvers: ${{ inputs.approvers }}."
+        run: echo "Waiting for approval from approvers: ${{ inputs.approvers }}."
 
   terraform-apply:
     name: "Terraform Apply"
