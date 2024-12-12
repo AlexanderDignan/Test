@@ -1,4 +1,4 @@
-name: Example Terraform Workflow
+name: Example Terraform Caller
 
 on:
   push:
