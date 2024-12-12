@@ -128,8 +128,8 @@ jobs:
       - name: Manual Approval
         uses: hmarr/auto-approve-action@v2
         with:
-          github-token: ${{ secrets.GITHUB_PAT || github.token }}
-
+          github-token: ${{ secrets.GITHUB_TOKEN }}
+# github-token: ${{ secrets.GITHUB_PAT || github.token }}
   terraform-apply:
     name: "Terraform Apply"
     runs-on: ubuntu-latest
