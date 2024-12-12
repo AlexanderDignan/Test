@@ -73,7 +73,7 @@ jobs:
   terraform-plan:
     name: "Terraform Plan"
     runs-on: ubuntu-latest
-    environment: ${{ inputs.environment }}
+    environment: noapprove
     outputs:
       tfplanExitCode: ${{ steps.plan.outputs.exitcode }}
 
