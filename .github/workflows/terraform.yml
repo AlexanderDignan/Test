@@ -73,6 +73,7 @@ jobs:
   terraform-plan:
     name: "Terraform Plan"
     runs-on: ubuntu-latest
+    environment: ${{ inputs.environment }}
     outputs:
       tfplanExitCode: ${{ steps.plan.outputs.exitcode }}
 
@@ -162,4 +163,3 @@ jobs:
 
       - name: Terraform Apply
         run: terraform apply tfplan
-        
