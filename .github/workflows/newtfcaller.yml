@@ -18,7 +18,7 @@ jobs:
       infra-repo: ${{ github.repository }}
       infra-ref: ${{ github.ref }}
       terraform-version: '1.9.5'
-      terraform-environment-dir: 'envs'
+      terraform-environment-dir: 'env'
     secrets:
       ARM_CLIENT_ID: "3c61b2f3-9809-4b4e-b7de-b89836b7bb73"
       ARM_SUBSCRIPTION_ID: "bc01f5a7-8f79-4a1e-99df-29b855e8d965"
