@@ -1,4 +1,4 @@
 variable "location" {
-  type = string
+  type        = string
   description = "Location to deploy"
 }
