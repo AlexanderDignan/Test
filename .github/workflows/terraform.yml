@@ -73,7 +73,6 @@ jobs:
   terraform-plan:
     name: "Terraform Plan"
     runs-on: ubuntu-latest
-    environment: ${{ inputs.environment }}
     outputs:
       tfplanExitCode: ${{ steps.plan.outputs.exitcode }}
 
@@ -135,7 +134,6 @@ jobs:
   terraform-apply:
     name: "Terraform Apply"
     runs-on: ubuntu-latest
-    environment: ${{ inputs.environment }}
     needs: [wait-for-approval]
     steps:
       - name: Checkout Repository
