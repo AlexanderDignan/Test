@@ -62,6 +62,9 @@ permissions:
 env:
   TF_LOG: ERROR
   TF_LOG_PATH: tf.log
+  ARM_CLIENT_ID: ${{ secrets.ARM_CLIENT_ID }}
+  ARM_TENANT_ID: ${{ secrets.ARM_TENANT_ID }}
+  ARM_SUBSCRIPTION_ID: ${{ secrets.ARM_SUBSCRIPTION_ID }}
 
 concurrency:
   group: ${{ github.workflow }}-${{ github.ref }}
@@ -94,9 +97,6 @@ jobs:
         with:
           terraform_version: ${{ inputs.terraform-version }}
       
-      - name: Print Debug info
-        run: env
-
       - name: Terraform Init
         run: |
           terraform init \
@@ -104,6 +104,10 @@ jobs:
             -backend-config="storage_account_name=${{secrets.BACKEND_AZURE_STORAGE_ACCOUNT_NAME}}" \
             -backend-config="container_name=${{secrets.BACKEND_AZURE_STORAGE_ACCOUNT_CONTAINER_NAME}}" \
             -backend-config="key=${{ inputs.app-env }}.tfstate"
+# env:
+#   ARM_CLIENT_ID: ${{ secrets.ARM_CLIENT_ID }}
+#   ARM_TENANT_ID: ${{ secrets.ARM_TENANT_ID }}
+#   ARM_SUBSCRIPTION_ID: ${{ secrets.ARM_SUBSCRIPTION_ID }}
       
       - name: Terraform Validate
         run: terraform validate
