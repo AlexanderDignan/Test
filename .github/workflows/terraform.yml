@@ -41,6 +41,9 @@ on:
       ARM_TENANT_ID:
         description: 'Azure Tenant ID.'
         required: true
+      GITHUB_PAT:
+        description: 'GitHub PAT'
+        required: true
       BACKEND_AZURE_RESOURCE_GROUP_NAME:
         description: 'Azure Resource Group name for Terraform backend.'
         required: true
@@ -118,8 +121,7 @@ jobs:
     name: "Manual Approval"
     runs-on: ubuntu-latest
     needs: terraform-plan
-    environment:
-      name: ${{ inputs.environment }}
+    environment: ${{ inputs.environment }}
     steps:
       - name: Awaiting Approval
         run: "echo Waiting for approval from approvers: ${{ inputs.approvers }}."
