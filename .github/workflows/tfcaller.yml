@@ -20,9 +20,9 @@ jobs:
       terraform-version: '1.9.5'
       terraform-environment-dir: 'env'
     secrets:
-      ARM_CLIENT_ID: ${{secrets.ARM_CLIENT_ID}}
-      ARM_SUBSCRIPTION_ID: ${{secrets.ARM_SUBSCRIPTION_ID}}
-      ARM_TENANT_ID: ${{secrets.ARM_TENANT_ID}}
+      ARM_CLIENT_ID: "3c61b2f3-9809-4b4e-b7de-b89836b7bb73"
+      ARM_SUBSCRIPTION_ID: "bc01f5a7-8f79-4a1e-99df-29b855e8d965"
+      ARM_TENANT_ID: "4b497271-d1e9-49b7-bea2-070105eed6ab"
       GITHUB_PAT: ${{ github.token }}
       BACKEND_AZURE_RESOURCE_GROUP_NAME: ${{ secrets.BACKEND_AZURE_RESOURCE_GROUP_NAME }}
       BACKEND_AZURE_STORAGE_ACCOUNT_CONTAINER_NAME: ${{ secrets.BACKEND_AZURE_STORAGE_ACCOUNT_CONTAINER_NAME }}
