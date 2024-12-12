@@ -5,5 +5,5 @@ variable "location" {
 
 variable "environment" {
   type        = string
-  description = "environment"
+  description = "environment to deploy"
 }
