@@ -93,6 +93,9 @@ jobs:
         uses: hashicorp/setup-terraform@v3
         with:
           terraform_version: ${{ inputs.terraform-version }}
+      
+      - name: Print Debug info
+        run: env
 
       - name: Terraform Init
         run: |
@@ -101,6 +104,7 @@ jobs:
             -backend-config="storage_account_name=${{secrets.BACKEND_AZURE_STORAGE_ACCOUNT_NAME}}" \
             -backend-config="container_name=${{secrets.BACKEND_AZURE_STORAGE_ACCOUNT_CONTAINER_NAME}}" \
             -backend-config="key=${{ inputs.app-env }}.tfstate"
+      
       - name: Terraform Validate
         run: terraform validate
 
