@@ -125,7 +125,7 @@ jobs:
   terraform-apply:
     name: "Terraform Apply"
     runs-on: ubuntu-latest
-    environment: ${{ inputs.environment }}
+    environment: ${{ inputs.environment }} #production
     needs: [terraform-plan]
     steps:
       - name: Checkout Repository

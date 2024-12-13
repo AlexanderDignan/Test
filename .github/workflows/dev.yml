@@ -1,0 +1,29 @@
+name: Example Terraform Caller
+
+on:
+  push:
+    branches:
+      - master
+  pull_request:
+    branches:
+      - master
+
+jobs:
+  call-terraform-workflow:
+    uses: ./.github/workflows/terraform.yml
+    with:
+      approvers: 'adig'
+      app-env: 'dev'
+      environment: 'development'
+      infra-repo: ${{ github.repository }}
+      infra-ref: ${{ github.ref }}
+      terraform-version: '1.9.5'
+      terraform-environment-dir: 'env'
+    secrets:
+      ARM_CLIENT_ID: ${{ secrets.ARM_CLIENT_ID }}
+      ARM_SUBSCRIPTION_ID: ${{ secrets.ARM_SUBSCRIPTION_ID }}
+      ARM_TENANT_ID: ${{ secrets.ARM_TENANT_ID }}
+      GITHUB_PAT: ${{ github.token }}
+      BACKEND_AZURE_RESOURCE_GROUP_NAME: ${{ secrets.BACKEND_AZURE_RESOURCE_GROUP_NAME }}
+      BACKEND_AZURE_STORAGE_ACCOUNT_CONTAINER_NAME: ${{ secrets.BACKEND_AZURE_STORAGE_ACCOUNT_CONTAINER_NAME }}
+      BACKEND_AZURE_STORAGE_ACCOUNT_NAME: ${{ secrets.BACKEND_AZURE_STORAGE_ACCOUNT_NAME }}
